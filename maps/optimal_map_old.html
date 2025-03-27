@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_d01476d79399e46f3b3e68340be1ec5a {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.2.3/leaflet.textpath.min.js"></script>
+</head>
+<body>
+    
+    
+        <div style="position: fixed; 
+                    bottom: 50px; 
+                    right: 50px; 
+                    width: 200px;
+                    background-color: white;
+                    padding: 10px;
+                    border-radius: 5px;
+                    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+                    z-index: 1000;">
+            <h4 style="margin-top: 0;">Route Legend</h4>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 3px; 
+                     background-color: #007bff; margin-right: 5px;"></div>
+                <span>Main Route →</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 3px; 
+                     background-color: #6c757d; border-style: dashed; margin-right: 5px;"></div>
+                <span>Landfill Trip</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #28a745; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">1</div>
+                <span>SWING Stop</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #dc3545; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">1</div>
+                <span>DRT Stop</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #007bff; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">H</div>
+                <span>Hauling Facility</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #6c757d; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">L</div>
+                <span>Landfill</span>
+            </div>
+        </div>
+        
+    
+            <div class="folium-map" id="map_d01476d79399e46f3b3e68340be1ec5a" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_d01476d79399e46f3b3e68340be1ec5a = L.map(
+                "map_d01476d79399e46f3b3e68340be1ec5a",
+                {
+                    center: [1.5, 2.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_bfab6b67b647bc7fd8cebfb739790420 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_bfab6b67b647bc7fd8cebfb739790420.addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var layer_control_7a5af60453f0c1b2f1acf864e8c3038f_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_bfab6b67b647bc7fd8cebfb739790420,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_7a5af60453f0c1b2f1acf864e8c3038f = L.control.layers(
+                layer_control_7a5af60453f0c1b2f1acf864e8c3038f_layers.base_layers,
+                layer_control_7a5af60453f0c1b2f1acf864e8c3038f_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+
+        
+    
+            var marker_4482e2595f0e47ca29c46e6f75c99437 = L.marker(
+                [1.0, 2.0],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_6d24335aa5a5df05604d36a94cb9c234 = L.divIcon({
+  "html": "                \u003cdiv style=\"font-family: courier new; color: #007bff; \n                font-size: 24px; font-weight: bold; text-align: center;\n                background-color: white; border-radius: 50%; width: 30px; \n                height: 30px; line-height: 30px; border: 2px solid #007bff;\"\u003e\n                H\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_4482e2595f0e47ca29c46e6f75c99437.setIcon(div_icon_6d24335aa5a5df05604d36a94cb9c234);
+        
+    
+        var popup_aed11308d988f05833cda1965b00513d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e28a14ce6fc84a88eebef8c8cefa4044 = $(`<div id="html_e28a14ce6fc84a88eebef8c8cefa4044" style="width: 100.0%; height: 100.0%;">Hauling Facility</div>`)[0];
+                popup_aed11308d988f05833cda1965b00513d.setContent(html_e28a14ce6fc84a88eebef8c8cefa4044);
+            
+        
+
+        marker_4482e2595f0e47ca29c46e6f75c99437.bindPopup(popup_aed11308d988f05833cda1965b00513d)
+        ;
+
+        
+    
+    
+            var marker_2158575e437ede23ee273beb30474330 = L.marker(
+                [2.0, 2.0],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_5783ab92d6cda37aab647271fdaa1093 = L.divIcon({
+  "html": "\\ \n                    \u003cdiv style=\"font-family: courier new; color: #6c757d; \n                    font-size: 24px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #6c757d;\"\u003e\n                    L\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_2158575e437ede23ee273beb30474330.setIcon(div_icon_5783ab92d6cda37aab647271fdaa1093);
+        
+    
+        var popup_b6d7b5d90c3acc34bf96784c6adf1a55 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1e59cef46dcb047ca9639023278cd64b = $(`<div id="html_1e59cef46dcb047ca9639023278cd64b" style="width: 100.0%; height: 100.0%;">Landfill 1</div>`)[0];
+                popup_b6d7b5d90c3acc34bf96784c6adf1a55.setContent(html_1e59cef46dcb047ca9639023278cd64b);
+            
+        
+
+        marker_2158575e437ede23ee273beb30474330.bindPopup(popup_b6d7b5d90c3acc34bf96784c6adf1a55)
+        ;
+
+        
+    
+    
+            var marker_90c4e6ddf94301545b7056ef0dd88224 = L.marker(
+                [31.0001, 20.999826794919244],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_885218e6d44d5bdfc5232df6ff09f763 = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #dc3545; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #dc3545;\"\u003e\n                    1\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_90c4e6ddf94301545b7056ef0dd88224.setIcon(div_icon_885218e6d44d5bdfc5232df6ff09f763);
+        
+    
+        var popup_2ab8303683dcbe6f43d7e882ca148b31 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9572f8f64fd0ba0a346c9e74b9033d3b = $(`<div id="html_9572f8f64fd0ba0a346c9e74b9033d3b" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>1</b><br>                          Name: Stop 5<br>                          Container: 30<br>                          Operation: DRT</div></div>`)[0];
+                popup_2ab8303683dcbe6f43d7e882ca148b31.setContent(html_9572f8f64fd0ba0a346c9e74b9033d3b);
+            
+        
+
+        marker_90c4e6ddf94301545b7056ef0dd88224.bindPopup(popup_2ab8303683dcbe6f43d7e882ca148b31)
+        ;
+
+        
+    
+    
+            var marker_5602e773fa93549ad51493d039f6d781 = L.marker(
+                [11.9998, 12.0],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_54569ebf7a3954c5e4159636939e7596 = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #28a745; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #28a745;\"\u003e\n                    2\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_5602e773fa93549ad51493d039f6d781.setIcon(div_icon_54569ebf7a3954c5e4159636939e7596);
+        
+    
+        var popup_35b3679bee45bbe39e078dbf9dd168de = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b853ebcd2dd359e651e6302f1552ee54 = $(`<div id="html_b853ebcd2dd359e651e6302f1552ee54" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>2</b><br>                          Name: Stop 1<br>                          Container: 30<br>                          Operation: SWING</div></div>`)[0];
+                popup_35b3679bee45bbe39e078dbf9dd168de.setContent(html_b853ebcd2dd359e651e6302f1552ee54);
+            
+        
+
+        marker_5602e773fa93549ad51493d039f6d781.bindPopup(popup_35b3679bee45bbe39e078dbf9dd168de)
+        ;
+
+        
+    
+    
+            var marker_0a6ffba1974d201fc0971fb280ff0b00 = L.marker(
+                [20.9999, 20.999826794919244],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_7db8f35b7e3cdca61220760cc1a3424b = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #28a745; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #28a745;\"\u003e\n                    3\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_0a6ffba1974d201fc0971fb280ff0b00.setIcon(div_icon_7db8f35b7e3cdca61220760cc1a3424b);
+        
+    
+        var popup_a464ebb4773c2095324a5a49ac698840 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2e7a2ea23739568734f7cc0db64853c7 = $(`<div id="html_2e7a2ea23739568734f7cc0db64853c7" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>3</b><br>                          Name: Stop 2<br>                          Container: 30<br>                          Operation: SWING</div></div>`)[0];
+                popup_a464ebb4773c2095324a5a49ac698840.setContent(html_2e7a2ea23739568734f7cc0db64853c7);
+            
+        
+
+        marker_0a6ffba1974d201fc0971fb280ff0b00.bindPopup(popup_a464ebb4773c2095324a5a49ac698840)
+        ;
+
+        
+    
+    
+            var marker_e0c6875bfc973fb99fda1e7de6e28c8e = L.marker(
+                [31.0, 30.9998],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_88f9024092cb0c4d8bb098eca2d12cb8 = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #28a745; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #28a745;\"\u003e\n                    4\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_e0c6875bfc973fb99fda1e7de6e28c8e.setIcon(div_icon_88f9024092cb0c4d8bb098eca2d12cb8);
+        
+    
+        var popup_a1786b2e333d36f57f0365f6e3ec4ea7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cf0930c61fd518a05391bc2ed45033a9 = $(`<div id="html_cf0930c61fd518a05391bc2ed45033a9" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>4</b><br>                          Name: Stop 3<br>                          Container: 30<br>                          Operation: SWING</div></div>`)[0];
+                popup_a1786b2e333d36f57f0365f6e3ec4ea7.setContent(html_cf0930c61fd518a05391bc2ed45033a9);
+            
+        
+
+        marker_e0c6875bfc973fb99fda1e7de6e28c8e.bindPopup(popup_a1786b2e333d36f57f0365f6e3ec4ea7)
+        ;
+
+        
+    
+    
+            var marker_8c00ecc4166c068c5da634e53ab3ecd4 = L.marker(
+                [12.000061803398875, 15.99980978869674],
+                {
+}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+            var div_icon_0a41befd2e2b005edd83fd10dca19893 = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #28a745; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #28a745;\"\u003e\n                    5\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_8c00ecc4166c068c5da634e53ab3ecd4.setIcon(div_icon_0a41befd2e2b005edd83fd10dca19893);
+        
+    
+        var popup_19a6e2fb257fa5a5890cb865696f8bca = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9c537502c94a6bce3840e56a68b6e9cb = $(`<div id="html_9c537502c94a6bce3840e56a68b6e9cb" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>5</b><br>                          Name: Stop 4<br>                          Container: 30<br>                          Operation: SWING</div></div>`)[0];
+                popup_19a6e2fb257fa5a5890cb865696f8bca.setContent(html_9c537502c94a6bce3840e56a68b6e9cb);
+            
+        
+
+        marker_8c00ecc4166c068c5da634e53ab3ecd4.bindPopup(popup_19a6e2fb257fa5a5890cb865696f8bca)
+        ;
+
+        
+    
+    
+            var poly_line_a1445a07b9e776011feda55dabbedcfe = L.polyline(
+                [[1.0, 2.0], [31.0001, 20.999826794919244], [11.9998, 12.0], [20.9999, 20.999826794919244], [31.0, 30.9998], [12.000061803398875, 15.99980978869674], [1.0, 2.0]],
+                {"bubblingMouseEvents": true, "color": "#007bff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#007bff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+        var popup_9687e6d2e0e26b9c0bd1ba0f94d60f42 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a0428689fe44ec2d37a3d3da459b8d70 = $(`<div id="html_a0428689fe44ec2d37a3d3da459b8d70" style="width: 100.0%; height: 100.0%;">Main Route</div>`)[0];
+                popup_9687e6d2e0e26b9c0bd1ba0f94d60f42.setContent(html_a0428689fe44ec2d37a3d3da459b8d70);
+            
+        
+
+        poly_line_a1445a07b9e776011feda55dabbedcfe.bindPopup(popup_9687e6d2e0e26b9c0bd1ba0f94d60f42)
+        ;
+
+        
+    
+    
+            poly_line_a1445a07b9e776011feda55dabbedcfe.bindTooltip(
+                `<div>
+                     Main Route
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            poly_line_a1445a07b9e776011feda55dabbedcfe.setText(
+                "\u2192",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 20,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#007bff",
+  "font-size": "14px",
+},
+}
+            );
+        
+    
+            var poly_line_25efaa5ac020f4907db258bae5e4da71 = L.polyline(
+                [[31.0, 21.0], [2.0, 2.0]],
+                {"bubblingMouseEvents": true, "color": "#6c757d", "dashArray": "10", "dashOffset": null, "fill": false, "fillColor": "#6c757d", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 2}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+        var popup_16ed00c25c7a1d07156dcce0b52d6e11 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a84cdd2f67a94b6ea5fc0b8ac832698a = $(`<div id="html_a84cdd2f67a94b6ea5fc0b8ac832698a" style="width: 100.0%; height: 100.0%;">Landfill Trip for Stop 1</div>`)[0];
+                popup_16ed00c25c7a1d07156dcce0b52d6e11.setContent(html_a84cdd2f67a94b6ea5fc0b8ac832698a);
+            
+        
+
+        poly_line_25efaa5ac020f4907db258bae5e4da71.bindPopup(popup_16ed00c25c7a1d07156dcce0b52d6e11)
+        ;
+
+        
+    
+    
+            poly_line_25efaa5ac020f4907db258bae5e4da71.bindTooltip(
+                `<div>
+                     To Landfill
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_9a33d59dff1a3fcdf752580c4f8d4647 = L.polyline(
+                [[2.0, 2.0], [31.0, 21.0]],
+                {"bubblingMouseEvents": true, "color": "#6c757d", "dashArray": "10", "dashOffset": null, "fill": false, "fillColor": "#6c757d", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 2}
+            ).addTo(map_d01476d79399e46f3b3e68340be1ec5a);
+        
+    
+        var popup_55acca491f37ec88c572deeee58ad6cf = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7f09c2fe49f7a9a9a3f8335b155e7ebe = $(`<div id="html_7f09c2fe49f7a9a9a3f8335b155e7ebe" style="width: 100.0%; height: 100.0%;">Return from Landfill for Stop 1</div>`)[0];
+                popup_55acca491f37ec88c572deeee58ad6cf.setContent(html_7f09c2fe49f7a9a9a3f8335b155e7ebe);
+            
+        
+
+        poly_line_9a33d59dff1a3fcdf752580c4f8d4647.bindPopup(popup_55acca491f37ec88c572deeee58ad6cf)
+        ;
+
+        
+    
+    
+            poly_line_9a33d59dff1a3fcdf752580c4f8d4647.bindTooltip(
+                `<div>
+                     Return from Landfill
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_a42dca4cf800c93167ad2745d68de80c {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.2.3/leaflet.textpath.min.js"></script>
+</head>
+<body>
+    
+    
+        <div style="position: fixed; 
+                    bottom: 50px; 
+                    right: 50px; 
+                    width: 200px;
+                    background-color: white;
+                    padding: 10px;
+                    border-radius: 5px;
+                    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+                    z-index: 1000;">
+            <h4 style="margin-top: 0;">Route Legend</h4>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 3px; 
+                     background-color: #007bff; margin-right: 5px;"></div>
+                <span>Main Route →</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 3px; 
+                     background-color: #6c757d; border-style: dashed; margin-right: 5px;"></div>
+                <span>Landfill Trip</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #28a745; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">1</div>
+                <span>SWING Stop</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #dc3545; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">1</div>
+                <span>DRT Stop</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #007bff; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">H</div>
+                <span>Hauling Facility</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <div style="display: inline-block; width: 20px; height: 20px; 
+                     border: 2px solid #6c757d; border-radius: 50%; text-align: center; 
+                     line-height: 16px; margin-right: 5px;">L</div>
+                <span>Landfill</span>
+            </div>
+        </div>
+        
+    
+            <div class="folium-map" id="map_a42dca4cf800c93167ad2745d68de80c" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_a42dca4cf800c93167ad2745d68de80c = L.map(
+                "map_a42dca4cf800c93167ad2745d68de80c",
+                {
+                    center: [0.0, 0.0],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2e847745bb1af001ab54a008379386a9 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_2e847745bb1af001ab54a008379386a9.addTo(map_a42dca4cf800c93167ad2745d68de80c);
+        
+    
+            var layer_control_0f8398e073393da5a5b85741981e0cf1_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_2e847745bb1af001ab54a008379386a9,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_0f8398e073393da5a5b85741981e0cf1 = L.control.layers(
+                layer_control_0f8398e073393da5a5b85741981e0cf1_layers.base_layers,
+                layer_control_0f8398e073393da5a5b85741981e0cf1_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_a42dca4cf800c93167ad2745d68de80c);
+
+        
+    
+            var marker_2f7906af33aa286c5ac74e25400bb5e4 = L.marker(
+                [0.0, 0.0],
+                {
+}
+            ).addTo(map_a42dca4cf800c93167ad2745d68de80c);
+        
+    
+            var div_icon_e7cc1d9de44323417664b5dacadef6c2 = L.divIcon({
+  "html": "                \u003cdiv style=\"font-family: courier new; color: #007bff; \n                font-size: 24px; font-weight: bold; text-align: center;\n                background-color: white; border-radius: 50%; width: 30px; \n                height: 30px; line-height: 30px; border: 2px solid #007bff;\"\u003e\n                H\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_2f7906af33aa286c5ac74e25400bb5e4.setIcon(div_icon_e7cc1d9de44323417664b5dacadef6c2);
+        
+    
+        var popup_76138257f2fe39c35687e52079898e41 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_54a1421008785f662e8417dbd0416867 = $(`<div id="html_54a1421008785f662e8417dbd0416867" style="width: 100.0%; height: 100.0%;">Hauling Facility</div>`)[0];
+                popup_76138257f2fe39c35687e52079898e41.setContent(html_54a1421008785f662e8417dbd0416867);
+            
+        
+
+        marker_2f7906af33aa286c5ac74e25400bb5e4.bindPopup(popup_76138257f2fe39c35687e52079898e41)
+        ;
+
+        
+    
+    
+            var marker_f287ce2401abba62fba9b998a0f69e51 = L.marker(
+                [0.0, 0.0],
+                {
+}
+            ).addTo(map_a42dca4cf800c93167ad2745d68de80c);
+        
+    
+            var div_icon_3ca802546826ebc235fb3821a875b610 = L.divIcon({
+  "html": "\\ \n                    \u003cdiv style=\"font-family: courier new; color: #6c757d; \n                    font-size: 24px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #6c757d;\"\u003e\n                    L\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_f287ce2401abba62fba9b998a0f69e51.setIcon(div_icon_3ca802546826ebc235fb3821a875b610);
+        
+    
+        var popup_51bbfb7c9b14cb06300a29ad917b3692 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_5404700efdecadd39aa9812663e984cb = $(`<div id="html_5404700efdecadd39aa9812663e984cb" style="width: 100.0%; height: 100.0%;">Landfill 1</div>`)[0];
+                popup_51bbfb7c9b14cb06300a29ad917b3692.setContent(html_5404700efdecadd39aa9812663e984cb);
+            
+        
+
+        marker_f287ce2401abba62fba9b998a0f69e51.bindPopup(popup_51bbfb7c9b14cb06300a29ad917b3692)
+        ;
+
+        
+    
+    
+            var marker_d81b99da9b3762a9da249667ca3d0564 = L.marker(
+                [-0.0002, 2.4492935982947065e-20],
+                {
+}
+            ).addTo(map_a42dca4cf800c93167ad2745d68de80c);
+        
+    
+            var div_icon_c752b401e19aab23430e519801cf1571 = L.divIcon({
+  "html": "\n                    \u003cdiv style=\"font-family: courier new; color: #28a745; \n                    font-size: 20px; font-weight: bold; text-align: center;\n                    background-color: white; border-radius: 50%; width: 30px; \n                    height: 30px; line-height: 30px; border: 2px solid #28a745;\"\u003e\n                    1\u003c/div\u003e",
+  "className": "empty",
+});
+            marker_d81b99da9b3762a9da249667ca3d0564.setIcon(div_icon_c752b401e19aab23430e519801cf1571);
+        
+    
+        var popup_cc18149847a7a1631287826716c6f0c4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_055142e3469c4490f4c5f94197f216c6 = $(`<div id="html_055142e3469c4490f4c5f94197f216c6" style="width: 100.0%; height: 100.0%;"><div style='font-size: 14px'>                          <b>1</b><br>                          Name: Stop 1<br>                          Container: 30<br>                          Operation: SWING</div></div>`)[0];
+                popup_cc18149847a7a1631287826716c6f0c4.setContent(html_055142e3469c4490f4c5f94197f216c6);
+            
+        
+
+        marker_d81b99da9b3762a9da249667ca3d0564.bindPopup(popup_cc18149847a7a1631287826716c6f0c4)
+        ;
+
+        
+    
+    
+            var poly_line_b5c35c86cc1cd29919086ce1c49605ed = L.polyline(
+                [[0.0, 0.0], [-0.0002, 2.4492935982947065e-20], [0.0, 0.0]],
+                {"bubblingMouseEvents": true, "color": "#007bff", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#007bff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_a42dca4cf800c93167ad2745d68de80c);
+        
+    
+        var popup_a2241dbd3fe4c6117326269b169b4374 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_5c4c96b15f6206b614b7f757125b3268 = $(`<div id="html_5c4c96b15f6206b614b7f757125b3268" style="width: 100.0%; height: 100.0%;">Main Route</div>`)[0];
+                popup_a2241dbd3fe4c6117326269b169b4374.setContent(html_5c4c96b15f6206b614b7f757125b3268);
+            
+        
+
+        poly_line_b5c35c86cc1cd29919086ce1c49605ed.bindPopup(popup_a2241dbd3fe4c6117326269b169b4374)
+        ;
+
+        
+    
+    
+            poly_line_b5c35c86cc1cd29919086ce1c49605ed.bindTooltip(
+                `<div>
+                     Main Route
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            poly_line_b5c35c86cc1cd29919086ce1c49605ed.setText(
+                "\u2192",
+                {
+  "repeat": true,
+  "center": false,
+  "below": false,
+  "offset": 20,
+  "orientation": 0,
+  "attributes": {
+  "fill": "#007bff",
+  "font-size": "14px",
+},
+}
+            );
+        
+</script>
+</html>
