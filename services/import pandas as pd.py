@@ -12,7 +12,6 @@ from gurobipy import Model, GRB, quicksum
 from arcgis.gis import GIS
 from arcgis.network import analysis
 from arcgis.features import FeatureSet
-from collections import defaultdict
 import pandas
 
 # Ensure folders exist
@@ -31,7 +30,6 @@ class Stop:
     can_swing: bool = False
     current_container: str = ""
     operation_type: str = "DRT"
-    landfill_index: int = 0
 
 # === Visualizer ===
 class RouteVisualizer:
@@ -50,8 +48,7 @@ class RouteVisualizer:
         route_info,
         swing_decisions=None,
         landfill_locs=None,
-        hauling_loc=None,
-        use_nearest_landfill=False
+        hauling_loc=None
     ) -> folium.Map:
         if hauling_loc is None:
             hauling_loc = (41.655032, -86.0097)
@@ -63,7 +60,7 @@ class RouteVisualizer:
         m = folium.Map(location=[center_lat, center_lon], zoom_start=11)
 
         RouteVisualizer._add_facility_markers(m, hauling_loc, landfill_locs)
-        RouteVisualizer._add_route_visualization(m, sequence, hauling_loc, landfill_locs, route_info, use_nearest_landfill)
+        RouteVisualizer._add_route_visualization(m, sequence, hauling_loc, landfill_locs, route_info, swing_decisions)
         RouteVisualizer._add_legend(m)
 
         return m
@@ -74,7 +71,7 @@ class RouteVisualizer:
         folium.Marker(
             hauling_loc,
             popup="Hauling Facility",
-            icon=folium.DivIcon(html="""
+            icon=folium.DivIcon(html="""\
                 <div style="font-family: courier new; color: #007bff;
                 font-size: 24px; font-weight: bold; text-align: center;
                 background-color: white; border-radius: 50%; width: 30px;
@@ -83,39 +80,20 @@ class RouteVisualizer:
         ).add_to(m)
 
         # Landfill markers
-        coord_map = defaultdict(list)
-        for i, loc in enumerate(landfill_locs):
-            coord_map[loc].append(i + 1)  # Use 1-based index
-
-        # Add grouped landfill markers
-        for loc, indices in coord_map.items():
-            label = f"L{indices[0]}"  # Show first index
-            popup_text = f"Landfill for: {indices}"
-
+        for i, landfill_loc in enumerate(landfill_locs):
             folium.Marker(
-                loc,
-                popup=popup_text,
-                icon=folium.DivIcon(html=f"""
+                landfill_loc,
+                popup=f"Landfill {i+1}",
+                icon=folium.DivIcon(html=f"""\
                     <div style="font-family: courier new; color: #6c757d;
                     font-size: 24px; font-weight: bold; text-align: center;
                     background-color: white; border-radius: 50%; width: 30px;
                     height: 30px; line-height: 30px; border: 2px solid #6c757d;">
-                    {label}</div>""")
+                    L</div>""")
             ).add_to(m)
-        # for i, landfill_loc in enumerate(landfill_locs):
-        #     folium.Marker(
-        #         landfill_loc,
-        #         popup=f"Landfill {i+1}",
-        #         icon=folium.DivIcon(html=f"""\
-        #             <div style="font-family: courier new; color: #6c757d;
-        #             font-size: 24px; font-weight: bold; text-align: center;
-        #             background-color: white; border-radius: 50%; width: 30px;
-        #             height: 30px; line-height: 30px; border: 2px solid #6c757d;">
-        #             L</div>""")
-        #     ).add_to(m)
 
     @staticmethod
-    def _add_route_visualization(m, sequence, hauling_loc, landfill_locs, route_info, use_nearest_landfill=False):
+    def _add_route_visualization(m, sequence, hauling_loc, landfill_locs, route_info, swing_decisions):
         OFFSET_DISTANCE = 0.0002  # Small offset for visualization
         
         # --- Prepare offset points to prevent overlapping ---
@@ -166,10 +144,9 @@ class RouteVisualizer:
         visited = set()  # track unique stops
         service_idx = 1  # real numbering for real stops (starts at 1)
         # --- Draw stop markers exactly at shifted points ---
-        count_landfill = len(landfill_locs)
         for idx, stop in enumerate(sequence):
             marker_coord = shifted_coords_for_markers[idx]
-            stop_id = int(stop.id) - count_landfill
+            stop_id = int(stop.id) - 1
             is_swing = route_info.get(stop_id, 0)
 
             # Only number if not visited yet
@@ -200,18 +177,14 @@ class RouteVisualizer:
 
         # --- Landfill trips (optional) still drawn based on real lat/lon ---
         for idx, stop in enumerate(sequence):
-            stop_id = int(stop.id) - count_landfill
+            stop_id = int(stop.id) - 1
             is_swing = route_info.get(stop_id, 0)
 
             current_loc = (stop.latitude, stop.longitude)  # Keep real position for landfill trips!
 
             if is_swing == 1:  # SWG stops
-                chosen_landfill = None
                 if idx == len(sequence) - 1 or route_info.get(int(sequence[idx+1].id)-1, 0) == 0:
-                    if use_nearest_landfill == True:
-                        chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
-                    else:
-                        chosen_landfill = landfill_locs[stop.landfill_index - 1]
+                    chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
                     folium.PolyLine(
                         locations=[current_loc, chosen_landfill],
                         color=RouteVisualizer.OPERATION_COLORS["LANDFILL"],
@@ -232,11 +205,7 @@ class RouteVisualizer:
                     ).add_to(m)
 
             elif is_swing == 0:  # DRT stops
-                chosen_landfill = None
-                if use_nearest_landfill == True:
-                        chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
-                else:
-                    chosen_landfill = landfill_locs[stop.landfill_index - 1]
+                chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
                 folium.PolyLine(
                     locations=[current_loc, chosen_landfill],
                     color=RouteVisualizer.OPERATION_COLORS["LANDFILL"],
@@ -343,91 +312,6 @@ def TSP_solver(customers, cij):
         print("[Fallback] TSP failed, using simple order.")
         return customers
 
-def apply_swg_drt_routing(stops: List[Stop], count_landfill, landfill_locs: List[Tuple[float, float]], nearest_landfill = False) -> List[int]:
-    """
-    Build route sequence following all SWG/DRT patterns:
-    - SWG -> LF
-    - SWG->SWG: if different size -> LF->Haul->Next SWG
-    - SWG->DRT: always LF->Haul->Next DRT
-    - DRT->DRT: No haul between
-    - DRT->SWG: DRT->LF->DRT->Haul->SWG
-    - If 'Haul' (id == "0") is in middle, just append 0
-    """
-    route = [0]  # Start at Haul
-    n = len(stops)
-
-    for i, stop in enumerate(stops):
-        stop_id = stop.id
-
-        if stop_id == "0":  # Haul inserted manually
-            route.append(0)
-            continue
-
-        stop_idx = int(stop_id)
-        stop_type = stop.operation_type  # SWG or DRT
-        current_size = int(stop.container_size)
-
-        if stop_type == "SWG":
-            route.append(stop_idx)  # Visit SWG stop
-            if nearest_landfill == True:
-                stop_latlon = (stop.latitude, stop.longitude)
-                nearest_index = np.argmin([haversine_distance(stop_latlon, lf) for lf in landfill_locs])
-                route.append(nearest_index + 1)
-            else:
-                # route.append(stop_idx - count_landfill)         # Go to landfill
-                route.append(stops[i].landfill_index)
-
-            if i + 1 < n:
-                next_stop = stops[i + 1]
-                if next_stop.id == "0":
-                    continue
-
-                next_type = next_stop.operation_type
-                next_size = int(next_stop.container_size)
-
-                if next_type == "SWG":
-                    if current_size != next_size:
-                        # Don’t go directly to next SWG. Instead, insert LF -> Haul
-                        # The next iteration will then append the next SWG
-                        if nearest_landfill == True:
-                            stop_latlon = (stop.latitude, stop.longitude)
-                            nearest_index = np.argmin([haversine_distance(stop_latlon, lf) for lf in landfill_locs])
-                            route.append(nearest_index + 1)
-                        else:
-                            # route.append(stop_idx - count_landfill)
-                            route.append(stops[i].landfill_index)
-                        route.append(0)
-                        continue  # Skip further additions for this iteration
-                elif next_type == "DRT":
-                    route.append(0)  # Haul before DRT
-            else:
-                route.append(0)
-
-        elif stop_type == "DRT":
-            route.append(stop_idx)  # Visit DRT
-            if nearest_landfill == True:
-                stop_latlon = (stop.latitude, stop.longitude)
-                nearest_index = np.argmin([haversine_distance(stop_latlon, lf) for lf in landfill_locs])
-                route.append(nearest_index + 1)
-            else:
-                # route.append(stop_idx - count_landfill)         # Go to landfill
-                route.append(stops[i].landfill_index)
-            route.append(stop_idx)  # Return to same DRT to reload
-
-            if i + 1 < n:
-                next_stop = stops[i + 1]
-                if next_stop.id == "0":
-                    continue
-                if next_stop.operation_type == "SWG":
-                    route.append(0)  # Go to Haul before SWG
-            else:
-                route.append(0)
-
-    if route[-1] != 0:
-        route.append(0)
-
-    return route
-
 
 def construct_sequence(arcs, customers):
     if not arcs:
@@ -453,33 +337,32 @@ def construct_sequence(arcs, customers):
             break
     return sequence
 
-def create_route_stops(phase: int, count_landfill, sequence, locations, stops_objects) -> List[Stop]:
+def create_route_stops(phase: int, sequence, locations, stops_objects) -> List[Stop]:
     newSequence = []
     for i in sequence:
-        if i == 0 or i <= count_landfill:
+        if i == 0 or i == 1:
             continue  # Skip Haul and LF1
-        stop_index = i - count_landfill - 1  # because locations[2] is Stop 1
+        stop_index = i - 2  # because locations[2] is Stop 1
         if 0 <= stop_index < len(stops_objects):
             newSequence.append(stops_objects[stop_index])
     return newSequence
 
-def save_result_csv(route_id, stops, landfills, time_matrix, dist_matrix, optimal_route, manual_route, location_id_for_name):
+def save_result_csv(route_id, stops, time_matrix, dist_matrix, optimal_route, manual_route, location_id_for_name):
     # Helper to translate index into name
-    count_landfill = len(landfills)
     def translate(idx):
         if idx == 0:
             return "Haul"
-        elif idx <= count_landfill:
-            return f"LF{idx}"
+        elif idx == 1:
+            return "LF1"
         else:
-            return f"Stop {idx-count_landfill}"
+            return f"Stop {idx-1}"
 
     # Helper to translate index into type
     def translate_type(idx, stops):
         if idx == 0:
             return "Haul"
-        elif idx <= count_landfill:
-            return f"LF{idx}"
+        elif idx == 1:
+            return "LF1"
         else:
             stop = next((s for s in stops if int(s.id) == idx), None)
             if stop:
@@ -498,7 +381,6 @@ def save_result_csv(route_id, stops, landfills, time_matrix, dist_matrix, optima
     _, _ = build_route(optimal_route, stops)  # we still need these
     print(build_route(optimal_route, stops))
     man_time, man_distance = 0, 0
-    print("3e3e3e3e3e3e", manual_route)
     for i in range(len(manual_route) - 1):
         man_time += time_matrix[manual_route[i]][manual_route[i+1]]
         man_distance += dist_matrix[manual_route[i]][manual_route[i+1]]
@@ -527,13 +409,10 @@ def save_result_csv(route_id, stops, landfills, time_matrix, dist_matrix, optima
         "Route Optimal": build_route(optimal_route, stops),
         "Route Manual": build_route(manual_route, stops)
     }])
-    print("result_:", result)
     location_id = location_id_for_name.replace("/", "-")
     save_path = f'services/route_optimization_output/IND_results/IND_results{location_id}.csv'
     result.to_csv(save_path, index=False)
-    print("result_1:", result)
     result.to_csv('IND_results.csv', index=False)
-    print("result_2:", result)
     print(f"[Save] IND_results saved: {save_path}")
     return {
         "Route_ID": route_id,
@@ -548,16 +427,16 @@ def save_result_csv(route_id, stops, landfills, time_matrix, dist_matrix, optima
         "Route Manual": build_route(manual_route, stops)
     }
 
-def save_sequence_csv(optimal_route, manual_route, count_landfill, time_matrix, dist_matrix, stops, location_id_for_name):
+def save_sequence_csv(optimal_route, manual_route, time_matrix, dist_matrix, stops, location_id_for_name):
     def translate(idx):
         if idx == 0:
             return "Haul"
-        elif idx <= count_landfill:
-            return f"LF{idx}"
+        elif idx == 1:
+            return "LF1"
         else:
-            return f"Stop {idx-count_landfill}"
+            return f"Stop {idx-1}"
 
-    stop_service_time = {int(s.id): 0 for s in stops}  # Assuming 5 min service time for all stops
+    stop_service_time = {int(s.id): 5 for s in stops}  # Assuming 5 min service time for all stops
 
     records = []
     for route, label in [(optimal_route, "Optimal"), (manual_route, "Manual")]:
@@ -570,7 +449,7 @@ def save_sequence_csv(optimal_route, manual_route, count_landfill, time_matrix, 
                 "Route_Type": label,
                 "Segment": f"{translate(from_idx)} -> {translate(to_idx)}",
                 "Time (min)": round(time_matrix[from_idx][to_idx], 2),
-                "Distance (km)": round(dist_matrix[from_idx][to_idx], 2),
+                "Distance (km)": round(dist_matrix[from_idx][to_idx], 2),  # miles -> km
                 "Service Time": service_time,
                 "PERM_NOTES": "",
                 "NOTE": ""
@@ -582,31 +461,66 @@ def save_sequence_csv(optimal_route, manual_route, count_landfill, time_matrix, 
     result.to_csv(f'services/route_optimization_output/Sequence/sequence_row{location_id}.csv', index=False)
     print(f"[Save] Sequence saved: services/route_optimization_output/Sequence/sequence_row{location_id}.csv")
     
-def save_maps(route_id, stops, landfills, locations, optimal_route, manual_route, hauling_loc, route_info):
-    count_landfill = len(landfills)
-    optimal_seq = create_route_stops(1, count_landfill, optimal_route, locations, stops)
-    manual_seq = create_route_stops(1, count_landfill, manual_route, locations, stops)
-    print("asdfasdfasdf____", route_id)
+def save_maps(route_id, stops, locations, optimal_route, manual_route, landfill, hauling_loc, original_route_info, route_info):
+    optimal_seq = create_route_stops(1, optimal_route, locations, stops)
+    manual_seq = create_route_stops(1, manual_route, locations, stops)
+    print("asdfasdfasdf", route_id)
     RouteVisualizer.create_map(
         stops=stops,
         sequence=optimal_seq,
         route_info=route_info,
-        landfill_locs=landfills,
-        hauling_loc=hauling_loc,
-        use_nearest_landfill=False
+        landfill_locs=[landfill],
+        hauling_loc=hauling_loc
     ).save(f"maps/optimal_map.html")
 
     RouteVisualizer.create_map(
         stops=stops,
         sequence=manual_seq,
-        route_info=route_info,
-        landfill_locs=landfills,
-        hauling_loc=hauling_loc,
-        use_nearest_landfill=False
+        route_info=original_route_info,
+        landfill_locs=[landfill],
+        hauling_loc=hauling_loc
     ).save(f"maps/manual_map.html")
 
-def build_manual_route_with_real_volume(stops, count_landfill, landfills, truck_volume_capacity=4):
-    return apply_swg_drt_routing(stops, count_landfill, landfills, False)
+def build_manual_route_with_real_volume(stops, route_info, truck_volume_capacity=4):
+    route = [0]  # Start at Haul
+    current_truck_volume = 0.0  # Volume occupied by full containers
+    num_stops = len(stops)
+
+    for idx, stop in enumerate(stops):
+        stop_idx = int(stop.id)
+        is_swg = route_info.get(stop_idx - 1, 0) == 1
+        container_volume = int(stop.container_size) / 10
+
+        route.append(stop_idx)  # Visit stop
+
+        if is_swg:
+            current_truck_volume += container_volume
+            route.append(1)  # Always go to landfill after SWG
+
+            # Look ahead: check if next stop is SWG or DRT
+            if idx + 1 < num_stops:
+                next_stop = stops[idx + 1]
+                is_next_swg = route_info.get(int(next_stop.id) - 1, 0) == 1
+                if not is_next_swg:
+                    # Next is DRT ➔ Must go back to Haul
+                    route.append(0)
+            else:
+                # Last stop ➔ Just go back to Haul
+                route.append(0)
+
+            current_truck_volume = 0.0  # Truck is emptied after landfill
+
+        else:  # DRT case
+            current_truck_volume += container_volume
+            route.append(1)  # Go to landfill after picking up DRT
+            route.append(stop_idx)  # Go back to current stop (reloading)
+            current_truck_volume = 0.0  # Reset after dumping
+
+    # End at Haul if not already
+    if route[-1] != 0:
+        route.append(0)
+
+    return route
 
 def rotate_tour_to_start(tour, start_node=0):
     if start_node not in tour:
@@ -641,8 +555,8 @@ async def get_distance_time_matrix_arcgis(locations):
 
     if result.solve_succeeded:
         od_matrix_df = result.output_origin_destination_lines.sdf
-        distance_matrix = np.zeros((destination_number, destination_number))
-        time_matrix = np.zeros((destination_number, destination_number))
+        distance_matrix = [[0] * destination_number for _ in range(destination_number)]
+        time_matrix = [[0] * destination_number for _ in range(destination_number)]
 
         for _, row in od_matrix_df.iterrows():
             origin_index = int(row["OriginOID"])
@@ -658,109 +572,120 @@ async def get_distance_time_matrix_arcgis(locations):
 
 # === Main Async Function ===
 async def generate_route_map(result_dict: str):
+    # --- Load and prepare data ---
     service_coords = []
     for stop in result_dict["Stops"]:
         service_coords.append((stop["Latitude"], stop["Longitude"]))
     midpoint = (result_dict["Haul"]['Latitude'], result_dict["Haul"]['Longitude'])
-    # landfill = (result_dict["LandFill"]['Latitude'], result_dict["LandFill"]['Longitude'])
-    landfills = []
-    count_landfill = 0
-    for landfill in result_dict["LandFills"]:
-        count_landfill += 1
-        landfills.append((landfill["Latitude"], landfill["Longitude"]))
-            
-    locations = [midpoint] + landfills + service_coords
+    landfill = (result_dict["LandFill"]['Latitude'], result_dict["Haul"]['Longitude'])
+    locations = [midpoint, landfill] + service_coords
 
     # --- Build Stop objects ---
     stops = []
     for idx, (lat, lon) in enumerate(service_coords):
         stop = result_dict["Stops"][idx]
         stops.append(Stop(
-            id=str(idx+1+count_landfill),
+            id=str(idx+2),
             latitude=lat,
             longitude=lon,
             container_size=str(stop['CURRENT_CONTAINER_SIZE']),
             name=f"Stop {idx+1}",
             can_swing=(stop['SERVICE_TYPE_CD'] == 'SWG'),
             current_container=str(stop['CURRENT_CONTAINER_SIZE']),
-            operation_type=('SWG' if stop['SERVICE_TYPE_CD'] == 'SWG' else 'DRT'),
-            landfill_index = stop['Landfill_Index']
+            operation_type=('SWG' if stop['SERVICE_TYPE_CD'] == 'SWG' else 'DRT')
         ))
 
     weight_list = [int(stop.container_size) for stop in stops]
-    print(weight_list)
-
-    route_info = {int(stop.id)-count_landfill: 1 if stop.operation_type == 'SWG' else 0 for stop in stops}
-    print("edededededed", locations)
+    print("weight_list", weight_list)
+    route_info = {int(stop.id)-1: 1 if stop.operation_type == 'SWG' else 0 for stop in stops}
+    print(route_info)
     dist_matrix, time_matrix = await get_distance_time_matrix_arcgis(locations)
+    swg_stops = [idx+2 for idx, stop in enumerate(stops) if stop.operation_type == 'SWG']
+    drt_stops = [idx+2 for idx, stop in enumerate(stops) if stop.operation_type == 'DRT']
+    original_route_info = {int(stop.id)-1: 1 if stop.operation_type == 'SWG' else 0 for stop in stops}
+    print("original_route_info", original_route_info)
+    # === Global TSP Part (M + N stops) ===
+    all_stops = list(range(2, len(stops)+2))  # IDs starting from 2 (Haul=0, Landfill=1)
+    all_stops.append(0)
+    # Solve global TSP including all SWG and DRT
+    global_sequence = TSP_solver(all_stops, time_matrix)
+    global_sequence = rotate_tour_to_start(global_sequence)
+    print("Optimized Global sequence (all stops):", global_sequence)
 
-    swg_stops = [idx + count_landfill + 1 for idx, stop in enumerate(stops) if stop.operation_type == 'SWG']
-    drt_stops = [idx + count_landfill + 1 for idx, stop in enumerate(stops) if stop.operation_type == 'DRT']
+    # Now, based on manual M and N
+    M = sum(1 for stop in stops if stop.operation_type == 'SWG')  # Number of SWG in manual
+    N = sum(1 for stop in stops if stop.operation_type == 'DRT')  # Number of DRT in manual
 
-    stop_list = []
+    # After TSP, assign operation types
+    for idx, stop_id in enumerate(global_sequence):
+        real_idx = stop_id - 2  # Because stop IDs are offset by 2
+        if idx < M:
+            stops[real_idx].operation_type = 'SWG'
+        else:
+            stops[real_idx].operation_type = 'DRT'
 
-    # --- Handle SWG stops: group by container size ---
-    if swg_stops:
-        swg_groups = {}
-        for i in swg_stops:
-            container_size = int(stops[i - count_landfill - 1].container_size)  # i-2 because of midpoint and landfill
-            swg_groups.setdefault(container_size, []).append(i)
+    # Update route_info after reassigning operation_type
+    route_info = {int(stop.id)-1: 1 if stop.operation_type == 'SWG' else 0 for stop in stops}
 
-        print("swg_groups: ", swg_groups)
+    # Build optimized route based on new SWG/DRT assignment and updated rules
+    routeOptimizedNew = [0]  # Start at Haul
+    current_volume = 0
+    truck_volume_capacity = 4
 
-        for size, group_stops in swg_groups.items():
-            if len(group_stops) > 1:
-                part_seq = TSP_solver(group_stops, time_matrix)
-            else:
-                part_seq = group_stops
-            print(f"Optimized SWG sequence for {size}yd:", part_seq)
-            stop_list += [stops[i - count_landfill - 1] for i in part_seq]
-            stop_list.append(Stop(id="0", latitude=midpoint[0], longitude=midpoint[1], container_size="0", name="Haul", operation_type="HAUL"))  # Insert Haul after each group
+    for idx, stop_id in enumerate(global_sequence):
+        stop = stops[stop_id-2]  # careful offset
+        container_volume = int(stop.container_size) / 10
 
-        if stop_list and stop_list[-1].id == "0":
-            stop_list.pop()  # Remove last Haul if no more stops after
+        routeOptimizedNew.append(stop_id)
 
-    # --- Handle DRT stops normally ---
-    if drt_stops:
-        drt_stops.append(0)
-        print("drtdrt: ", drt_stops)
-        drt_sequence = TSP_solver(drt_stops, time_matrix)
-        drt_sequence = rotate_tour_to_start(drt_sequence)
-        print("drtdrt tsp: ", drt_sequence)
+        # Determine next stop if available
+        next_stop_id = global_sequence[idx + 1] if idx + 1 < len(global_sequence) else None
+        next_stop = stops[next_stop_id-2] if next_stop_id else None
 
-        stop_list += [stops[i - count_landfill - 1] for i in drt_sequence if i != 0]
-    print("stop_list:", stop_list)
-    # === Apply full SWG/DRT rules (Haul/LF behavior) ===
-    routeOptimizedNew = apply_swg_drt_routing(stop_list, count_landfill, landfills, False)
-    print("rotueOptimalNoew", routeOptimizedNew)
+        if stop.operation_type == 'SWG':
+            current_volume += container_volume
+            print(f"[SWG] Current volume: {current_volume}/{truck_volume_capacity}")
+            if current_volume >= truck_volume_capacity:
+                # Truck full after SWG pickups
+                routeOptimizedNew.append(1)  # Landfill
+                current_volume = 0
+                # After landfill, if next stop is DRT, go to Haul first
+            if next_stop and next_stop.operation_type == 'DRT':
+                routeOptimizedNew.append(0)  # Haul (prepare empty)
+        elif stop.operation_type == 'DRT':
+            # After DRT pickup, go landfill
+            routeOptimizedNew.append(1)  # Landfill
+            # Then come back to same DRT stop to drop container
+            routeOptimizedNew.append(stop_id)
 
-    # === Manual route ===
-    manual_route = build_manual_route_with_real_volume(stops, count_landfill, landfills)
+    # After all stops, if not at Haul (0), return to Haul
+    if routeOptimizedNew[-1] != 0:
+        routeOptimizedNew.append(0)
     location_id = "location"
+    manual_route = build_manual_route_with_real_volume(stops, original_route_info)
     location_id_for_name = location_id.replace("/", "-")
     hauling_loc_coord = midpoint
     print("asdfasdfasdf", location_id_for_name)
     print(stops)
     print(locations)
-
-    save_maps(location_id_for_name, stops, landfills, locations, routeOptimizedNew, manual_route, hauling_loc_coord, route_info)
-    return_value = save_result_csv(location_id, stops, landfills, time_matrix, dist_matrix, routeOptimizedNew, manual_route, location_id)
+    save_maps(location_id_for_name, stops, locations, routeOptimizedNew, manual_route, landfill, hauling_loc_coord, original_route_info, route_info)
+    return_value = save_result_csv(location_id, stops, time_matrix, dist_matrix, routeOptimizedNew, manual_route, location_id)
     print(return_value)
     print(return_value["Driving Time (min) Optimal"])
-    save_sequence_csv(routeOptimizedNew, manual_route, count_landfill, time_matrix, dist_matrix, stops, location_id)
+    save_sequence_csv(routeOptimizedNew, manual_route, time_matrix, dist_matrix, [], location_id)
 
     return {
         "Route_ID": location_id,
         "Driving Time (min) Optimal": return_value["Driving Time (min) Optimal"],
         "Driving Distance (mile) Optimal": return_value["Driving Distance (mile) Optimal"],
         "Driving Time (min) Manual": return_value["Driving Time (min.) Manual"],
-        "Driving Distance (mile) Manual": return_value["Driving Distance (mile) Manual"],
+        "Driving Distance (mile) Manual": return_value[f"Driving Distance (mile) Manual"],
         "Percentage of DRT": return_value["Percentage of DRT"],
         "Percentage of Swing": return_value["Percentage of Swing"],
         "Number of Stops": return_value["Number of Stops"],
         "Route Optimal": return_value["Route Optimal"],
         "Route Manual": return_value["Route Manual"],
         "Time Benefit": return_value["Driving Time (min.) Manual"] - return_value["Driving Time (min) Optimal"],
-        "Distance Benefit": return_value["Driving Distance (mile) Manual"] - return_value["Driving Distance (mile) Optimal"],
+        "Distance Benefit": return_value[f"Driving Distance (mile) Manual"] - return_value["Driving Distance (mile) Optimal"],
         "Benefit": 0 if return_value["Driving Time (min.) Manual"] - return_value["Driving Time (min) Optimal"] > 0 else 1
     }

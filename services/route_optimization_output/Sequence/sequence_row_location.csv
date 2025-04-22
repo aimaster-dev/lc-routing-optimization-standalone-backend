@@ -1,34 +1,23 @@
-Route_ID,Route_Type,Segment,Time (min),Distance (km),Service Time,PERM_NOTES,NOTE
-location,Optimal,Haul -> Stop 1,1247.28,1647.04,12.0,,
-location,Optimal,Stop 1 -> LF,1174.23,1565.64,0.0,,qweqwe
-location,Optimal,LF -> Stop 1,1186.23,1565.64,12.0,,
-location,Optimal,Stop 1 -> Stop 2,1051.15,1385.53,12.0,,qweqwe
-location,Optimal,Stop 2 -> LF,2212.65,2950.2,0.0,,qweqwe
-location,Optimal,LF -> Stop 2,2224.65,2950.2,12.0,,
-location,Optimal,Stop 2 -> Stop 5,833.96,1111.95,0.0,,qweqwe
-location,Optimal,Stop 5 -> LF,2844.76,3793.02,0.0,,sfsdf
-location,Optimal,LF -> Stop 5,2844.76,3793.02,0.0,,
-location,Optimal,Stop 5 -> Haul,2917.36,3889.81,0.0,,sfsdf
-location,Optimal,Haul -> Stop 3,3403.03,4521.38,12.0,,
-location,Optimal,Stop 3 -> LF,3327.15,4436.2,0.0,,qweqwe
-location,Optimal,LF -> Haul,83.4,111.19,0.0,,
-location,Optimal,Haul -> Stop 4,1509.45,1969.93,32.0,,
-location,Optimal,Stop 4 -> LF,1426.44,1901.93,0.0,,qweqwe
-location,Optimal,LF -> Haul,83.4,111.19,0.0,,
-location,Manual,Haul -> Stop 1,1247.28,1647.04,12.0,,
-location,Manual,Stop 1 -> LF,1174.23,1565.64,0.0,,qweqwe
-location,Manual,LF -> Stop 1,1186.23,1565.64,12.0,,
-location,Manual,Stop 1 -> Stop 2,1051.15,1385.53,12.0,,qweqwe
-location,Manual,Stop 2 -> LF,2212.65,2950.2,0.0,,qweqwe
-location,Manual,LF -> Stop 2,2224.65,2950.2,12.0,,
-location,Manual,Stop 2 -> Haul,2274.42,3032.56,0.0,,qweqwe
-location,Manual,Haul -> Stop 3,3403.03,4521.38,12.0,,
-location,Manual,Stop 3 -> LF,3327.15,4436.2,0.0,,qweqwe
-location,Manual,LF -> Haul,83.4,111.19,0.0,,
-location,Manual,Haul -> Stop 4,1509.45,1969.93,32.0,,
-location,Manual,Stop 4 -> LF,1426.44,1901.93,0.0,,qweqwe
-location,Manual,LF -> Haul,83.4,111.19,0.0,,
-location,Manual,Haul -> Stop 5,2917.36,3889.81,0.0,,
-location,Manual,Stop 5 -> LF,2844.76,3793.02,0.0,,sfsdf
-location,Manual,LF -> Stop 5,2844.76,3793.02,0.0,,
-location,Manual,Stop 5 -> Haul,2917.36,3889.81,0.0,,sfsdf
+Route_ID,Route_Type,Segment,Time (min),Distance (km),Service Time,PERM_NOTES,NOTE,Converted_To_SWG
+location,Optimal,Haul -> Stop 1,5154.14,6857.52,11.0,,,False
+location,Optimal,Stop 1 -> Stop 3,13.96,3.95,11.0,,tewefasdf,True
+location,Optimal,Stop 3 -> Stop 2,25.07,18.76,11.0,,tewefasdf,True
+location,Optimal,Stop 2 -> Stop 4,14.43,4.58,11.0,,tewefasdf,False
+location,Optimal,Stop 4 -> Stop 5,28.82,23.77,11.0,,tewefasdf,True
+location,Optimal,Stop 5 -> LF,5169.36,6892.48,0.0,,tewefasdf,False
+location,Optimal,LF -> Haul,917.36,1223.14,0.0,,,False
+location,Manual,Haul -> Stop 1,5154.14,6857.52,11.0,,,False
+location,Manual,Stop 1 -> LF,5142.6,6856.8,0.0,,tewefasdf,False
+location,Manual,LF -> Stop 2,5165.65,6872.86,11.0,,,False
+location,Manual,Stop 2 -> LF,5154.65,6872.86,0.0,,tewefasdf,False
+location,Manual,LF -> Stop 2,5165.65,6872.86,11.0,,,False
+location,Manual,Stop 2 -> Stop 3,25.07,18.76,11.0,,tewefasdf,False
+location,Manual,Stop 3 -> LF,5143.89,6858.51,0.0,,tewefasdf,False
+location,Manual,LF -> Stop 3,5154.89,6858.51,11.0,,,False
+location,Manual,Stop 3 -> Haul,5144.97,6859.96,0.0,,tewefasdf,False
+location,Manual,Haul -> Stop 4,5170.21,6878.95,11.0,,,False
+location,Manual,Stop 4 -> LF,5157.02,6876.02,0.0,,tewefasdf,False
+location,Manual,LF -> Stop 5,5180.36,6892.48,11.0,,,False
+location,Manual,Stop 5 -> LF,5169.36,6892.48,0.0,,tewefasdf,False
+location,Manual,LF -> Stop 5,5180.36,6892.48,11.0,,,False
+location,Manual,Stop 5 -> Haul,5174.04,6898.73,0.0,,tewefasdf,False

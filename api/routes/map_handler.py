@@ -17,10 +17,11 @@ class Stop(BaseModel):
     SERVICE_WINDOW_TIME: float
     SERVICE_TYPE_CD: str
     PERM_NOTES: str
+    Landfill_Index: int
 
 class RouteData(BaseModel):
     Haul: Coordinates
-    LandFill: Coordinates
+    LandFills: List[Coordinates]
     Stops: List[Stop]
 
 @router.post("/route-map-new")
@@ -30,11 +31,22 @@ async def get_route(data: RouteData):
     """
     from services.route_optimizer_new import generate_route_map
 
-    await generate_route_map(data.model_dump())
-
     manual_file_name = f"maps/manual_map.html"
-    # optimal_file_name = f"maps/optimal_map_new.html"
     optimal_file_name = f"maps/optimal_map.html"
+    if os.path.exists(manual_file_name):
+        os.remove(manual_file_name)
+        print(f"✅ Deleted: {manual_file_name}")
+    else:
+        print(f"⚠️ File not found: {manual_file_name}")
+        
+    if os.path.exists(optimal_file_name):
+        os.remove(optimal_file_name)
+        print(f"✅ Deleted: {optimal_file_name}")
+    else:
+        print(f"⚠️ File not found: {optimal_file_name}")
+        
+    await generate_route_map(data.model_dump())
+    
     try:
         with open(manual_file_name, "r") as manual_file:
             manual_html_content = manual_file.read()
