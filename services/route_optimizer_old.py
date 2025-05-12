@@ -31,6 +31,7 @@ class Stop:
     can_swing: bool = False
     current_container: str = ""
     operation_type: str = "DRT"
+    landfill_index: int = 0
 
 # === Visualizer ===
 class RouteVisualizer:
@@ -210,7 +211,7 @@ class RouteVisualizer:
                     if use_nearest_landfill == True:
                         chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
                     else:
-                        chosen_landfill = landfill_locs[stop_id - 1]
+                        chosen_landfill = landfill_locs[stop.landfill_index - 1]
                     folium.PolyLine(
                         locations=[current_loc, chosen_landfill],
                         color=RouteVisualizer.OPERATION_COLORS["LANDFILL"],
@@ -235,7 +236,7 @@ class RouteVisualizer:
                 if use_nearest_landfill == True:
                         chosen_landfill = min(landfill_locs, key=lambda lf: haversine_distance(current_loc, lf))
                 else:
-                    chosen_landfill = landfill_locs[stop_id - 1]
+                    chosen_landfill = landfill_locs[stop.landfill_index - 1]
                 folium.PolyLine(
                     locations=[current_loc, chosen_landfill],
                     color=RouteVisualizer.OPERATION_COLORS["LANDFILL"],
@@ -592,7 +593,7 @@ def save_maps(route_id, stops, landfills, locations, optimal_route, manual_route
         route_info=route_info,
         landfill_locs=landfills,
         hauling_loc=hauling_loc,
-        use_nearest_landfill=True
+        use_nearest_landfill=False
     ).save(f"maps/optimal_map.html")
 
     RouteVisualizer.create_map(
@@ -730,7 +731,7 @@ async def generate_route_map(result_dict: str):
         stop_list += [stops[i - count_landfill - 1] for i in drt_sequence if i != 0]
     print("stop_list:", stop_list)
     # === Apply full SWG/DRT rules (Haul/LF behavior) ===
-    routeOptimizedNew = apply_swg_drt_routing(stop_list, count_landfill, landfills, True)
+    routeOptimizedNew = apply_swg_drt_routing(stop_list, count_landfill, landfills, False)
     print("rotueOptimalNoew", routeOptimizedNew)
 
     # === Manual route ===
